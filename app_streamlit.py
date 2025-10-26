@@ -10,8 +10,9 @@ os.environ["OPENCV_VIDEOIO_PRIORITY_MSMF"] = "0"
 os.environ["OPENCV_VIDEOIO_PRIORITY_GSTREAMER"] = "0"
 os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "0"
 
-# ---- Block cv2 from being imported ----
+# ---- Fake cv2 module to avoid errors when it's imported inside ultralytics ----
 cv2_stub = types.ModuleType("cv2")
+cv2_stub.__version__ = "0.0.0-stub"
 
 # Add no-op functions for the ones that Ultralytics might call
 cv2_stub.imshow = lambda *args, **kwargs: None
@@ -19,24 +20,23 @@ cv2_stub.imwrite = lambda *args, **kwargs: None
 cv2_stub.imread = lambda *args, **kwargs: None
 cv2_stub.setNumThreads = lambda *args, **kwargs: None  # Mock the setNumThreads method
 cv2_stub.IMREAD_COLOR = 1  # Fake the IMREAD_COLOR constant
-cv2_stub.__version__ = "0.0.0-stub"
 
-# Force the stub to be in sys.modules, so when `ultralytics` imports `cv2`, it uses our patched version
+# Patch the cv2 module in sys.modules
 sys.modules["cv2"] = cv2_stub
 
-# ---- Prevent cv2 from being used in ultralytics.utils ----
-def no_cv2_import(*args, **kwargs):
+# ---- Prevent `cv2.setNumThreads(0)` and any OpenCV calls from being executed ----
+def block_cv2_import(*args, **kwargs):
     raise ImportError("cv2 is not available, OpenCV functions are disabled.")
 
-# Mock `cv2` and prevent `ultralytics.utils` from calling it
+# Mock `cv2` in `sys.modules` to prevent OpenCV's multithreading settings from being called
 sys.modules['cv2'] = types.ModuleType('cv2')
-sys.modules['cv2'].imshow = no_cv2_import
-sys.modules['cv2'].imwrite = no_cv2_import
-sys.modules['cv2'].imread = no_cv2_import
-sys.modules['cv2'].setNumThreads = no_cv2_import
+sys.modules['cv2'].imshow = block_cv2_import
+sys.modules['cv2'].imwrite = block_cv2_import
+sys.modules['cv2'].imread = block_cv2_import
+sys.modules['cv2'].setNumThreads = block_cv2_import
 sys.modules['cv2'].IMREAD_COLOR = 1
 
-# ---- Import the rest of the packages after the patch ----
+# ---- Now import the rest of the packages after blocking cv2 ----
 import streamlit as st
 from ultralytics import YOLO
 import numpy as np
