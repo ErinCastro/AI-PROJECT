@@ -19,12 +19,25 @@ if "cv2" not in sys.modules:
     cv2_stub.imread = lambda *args, **kwargs: None
     cv2_stub.IMREAD_COLOR = 1  # Fake the IMREAD_COLOR constant
     cv2_stub.setNumThreads = lambda *args, **kwargs: None  # Fake the setNumThreads function
-    cv2_stub.__version__ = "0.0.0-stub"
+    cv2_stub.__version__ = "0.0.0-stub"  # Fake version
     sys.modules["cv2"] = cv2_stub
+
+# ---- Completely intercept any OpenCV imports and make them "no-op" ----
+def no_cv2_import(*args, **kwargs):
+    raise ImportError("cv2 is not available, OpenCV functions are disabled.")
+
+sys.modules['cv2'] = types.ModuleType('cv2')
+sys.modules['cv2'].imshow = no_cv2_import
+sys.modules['cv2'].imwrite = no_cv2_import
+sys.modules['cv2'].imread = no_cv2_import
+sys.modules['cv2'].setNumThreads = no_cv2_import
+sys.modules['cv2'].IMREAD_COLOR = 1
+
+# ---- Import the rest of the packages after the patches ----
 import streamlit as st
 from ultralytics import YOLO
 import numpy as np
-import tempfile, os
+import tempfile
 from PIL import Image
 
 st.set_page_config(page_title="YOLO Deploy", page_icon="🤖", layout="centered")
