@@ -1,4 +1,4 @@
-import streamlit as st
+
 import os
 os.environ["OPENCV_VIDEOIO_PRIORITY_MSMF"] = "0"
 os.environ["OPENCV_VIDEOIO_PRIORITY_GSTREAMER"] = "0"
@@ -6,6 +6,7 @@ os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "0"
 os.environ["QT_QPA_PLATFORM"] = "offscreen"     # disable GUI usage
 os.environ["DISPLAY"] = ""                      # no display device
 
+import streamlit as st
 from ultralytics import YOLO
 import numpy as np
 import tempfile, os
