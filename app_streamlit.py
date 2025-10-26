@@ -10,7 +10,7 @@ os.environ["OPENCV_VIDEOIO_PRIORITY_MSMF"] = "0"
 os.environ["OPENCV_VIDEOIO_PRIORITY_GSTREAMER"] = "0"
 os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "0"
 
-# ---- Fake cv2 to avoid errors when it's imported inside ultralytics ----
+# ---- Fake cv2 module to avoid errors when it's imported inside ultralytics ----
 cv2_stub = types.ModuleType("cv2")
 cv2_stub.__version__ = "0.0.0-stub"
 
@@ -66,9 +66,4 @@ if uploaded:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmp:
             img.save(tmp.name)
             results = model.predict(source=tmp.name, conf=conf, save=False, verbose=False)
-        # results[0].plot() returns a numpy array with annotations
-        annotated = results[0].plot()
-        st.image(annotated, caption="Detections", use_column_width=True)
-        # Show raw boxes/classes (optional)
-        with st.expander("Show raw results"):
-            st.write(results[0].boxes)
+        #
