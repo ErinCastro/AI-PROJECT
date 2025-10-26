@@ -10,7 +10,7 @@ os.environ["OPENCV_VIDEOIO_PRIORITY_MSMF"] = "0"
 os.environ["OPENCV_VIDEOIO_PRIORITY_GSTREAMER"] = "0"
 os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "0"
 
-# ---- Fake cv2 module to avoid errors when it's imported inside ultralytics ----
+# ---- Fake cv2 to avoid errors when it's imported inside ultralytics ----
 cv2_stub = types.ModuleType("cv2")
 cv2_stub.__version__ = "0.0.0-stub"
 
@@ -19,12 +19,24 @@ cv2_stub.imshow = lambda *args, **kwargs: None
 cv2_stub.imwrite = lambda *args, **kwargs: None
 cv2_stub.imread = lambda *args, **kwargs: None
 cv2_stub.setNumThreads = lambda *args, **kwargs: None  # Mock the setNumThreads method
-cv2_stub.IMREAD_COLOR = 1  # Mock the IMREAD_COLOR constant
+cv2_stub.IMREAD_COLOR = 1  # Fake the IMREAD_COLOR constant
 
 # Patch the cv2 module in sys.modules
 sys.modules["cv2"] = cv2_stub
 
-# Now import the rest of the packages after the patch
+# ---- Force `ultralytics` to avoid `cv2` import ----
+def no_cv2_import(*args, **kwargs):
+    raise ImportError("cv2 is not available, OpenCV functions are disabled.")
+
+# Mock `cv2` and prevent `ultralytics.utils` from calling it
+sys.modules['cv2'] = types.ModuleType('cv2')
+sys.modules['cv2'].imshow = no_cv2_import
+sys.modules['cv2'].imwrite = no_cv2_import
+sys.modules['cv2'].imread = no_cv2_import
+sys.modules['cv2'].setNumThreads = no_cv2_import
+sys.modules['cv2'].IMREAD_COLOR = 1
+
+# ---- Import the rest of the packages after the patch ----
 import streamlit as st
 from ultralytics import YOLO
 import numpy as np
