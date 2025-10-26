@@ -10,21 +10,21 @@ os.environ["OPENCV_VIDEOIO_PRIORITY_MSMF"] = "0"
 os.environ["OPENCV_VIDEOIO_PRIORITY_GSTREAMER"] = "0"
 os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "0"
 
-# ---- Fake cv2 module to avoid errors when it's imported inside ultralytics ----
+# ---- Block cv2 from being imported ----
 cv2_stub = types.ModuleType("cv2")
-cv2_stub.__version__ = "0.0.0-stub"
 
-# Add no-op methods for the ones that Ultralytics might call
+# Add no-op functions for the ones that Ultralytics might call
 cv2_stub.imshow = lambda *args, **kwargs: None
 cv2_stub.imwrite = lambda *args, **kwargs: None
 cv2_stub.imread = lambda *args, **kwargs: None
 cv2_stub.setNumThreads = lambda *args, **kwargs: None  # Mock the setNumThreads method
 cv2_stub.IMREAD_COLOR = 1  # Fake the IMREAD_COLOR constant
+cv2_stub.__version__ = "0.0.0-stub"
 
-# Patch the cv2 module in sys.modules
+# Force the stub to be in sys.modules, so when `ultralytics` imports `cv2`, it uses our patched version
 sys.modules["cv2"] = cv2_stub
 
-# ---- Force `ultralytics` to avoid `cv2` import ----
+# ---- Prevent cv2 from being used in ultralytics.utils ----
 def no_cv2_import(*args, **kwargs):
     raise ImportError("cv2 is not available, OpenCV functions are disabled.")
 
@@ -66,4 +66,9 @@ if uploaded:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmp:
             img.save(tmp.name)
             results = model.predict(source=tmp.name, conf=conf, save=False, verbose=False)
-        #
+        # results[0].plot() returns a numpy array with annotations
+        annotated = results[0].plot()
+        st.image(annotated, caption="Detections", use_column_width=True)
+        # Show raw boxes/classes (optional)
+        with st.expander("Show raw results"):
+            st.write(results[0].boxes)
