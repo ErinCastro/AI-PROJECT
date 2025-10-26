@@ -18,9 +18,9 @@ if "cv2" not in sys.modules:
     cv2_stub.imwrite = lambda *args, **kwargs: None
     cv2_stub.imread = lambda *args, **kwargs: None
     cv2_stub.IMREAD_COLOR = 1  # Fake the IMREAD_COLOR constant
+    cv2_stub.setNumThreads = lambda *args, **kwargs: None  # Fake the setNumThreads function
     cv2_stub.__version__ = "0.0.0-stub"
     sys.modules["cv2"] = cv2_stub
-
 import streamlit as st
 from ultralytics import YOLO
 import numpy as np
