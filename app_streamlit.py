@@ -1,10 +1,11 @@
 
 import os
+os.environ["YOLO_NO_CV2"] = "1"
+os.environ["QT_QPA_PLATFORM"] = "offscreen"
+os.environ["DISPLAY"] = ""
 os.environ["OPENCV_VIDEOIO_PRIORITY_MSMF"] = "0"
 os.environ["OPENCV_VIDEOIO_PRIORITY_GSTREAMER"] = "0"
 os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "0"
-os.environ["QT_QPA_PLATFORM"] = "offscreen"     # disable GUI usage
-os.environ["DISPLAY"] = ""                      # no display device
 
 import streamlit as st
 from ultralytics import YOLO
