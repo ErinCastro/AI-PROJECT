@@ -17,7 +17,7 @@ onnxruntime>=1.18.0   # GPU runtime not supported on Streamlit Cloud
 # ---- App / visualization ----
 streamlit>=1.39.0
 gradio>=4.44.1
-opencv-python>=4.9.0.80
+opencv-python-headless>=4.9.0.80
 supervision>=0.22.0
 pillow>=10.4.0
 numpy>=1.26.4
