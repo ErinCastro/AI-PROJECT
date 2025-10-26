@@ -2,20 +2,22 @@ import os
 import sys
 import types
 
-# ---- disable OpenCV usage & GUI backends BEFORE importing ultralytics ----
+# ---- Disable OpenCV usage & GUI backends BEFORE importing ultralytics ----
 os.environ["YOLO_NO_CV2"] = "1"
-os.environ["QT_QPA_PLATFORM"] = "offscreen"
-os.environ["DISPLAY"] = ""
+os.environ["QT_QPA_PLATFORM"] = "offscreen"  # Disable any Qt display
+os.environ["DISPLAY"] = ""  # No X server
 os.environ["OPENCV_VIDEOIO_PRIORITY_MSMF"] = "0"
 os.environ["OPENCV_VIDEOIO_PRIORITY_GSTREAMER"] = "0"
 os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "0"
 
-# ---- provide a tiny stub so "import cv2" succeeds inside ultralytics ----
+# ---- Fake cv2 to avoid errors when it's imported inside ultralytics ----
 if "cv2" not in sys.modules:
     cv2_stub = types.ModuleType("cv2")
+    # Add no-op functions for the ones that Ultralytics might call
+    cv2_stub.imshow = lambda *args, **kwargs: None
+    cv2_stub.imwrite = lambda *args, **kwargs: None
+    cv2_stub.imread = lambda *args, **kwargs: None
     cv2_stub.__version__ = "0.0.0-stub"
-    # add no-op functions only if you later see AttributeErrors referencing them
-    # e.g., cv2.cvtColor = lambda *a, **k: None
     sys.modules["cv2"] = cv2_stub
 
 import streamlit as st
